@@ -7,8 +7,8 @@
         <title>Rick and Morty</title>
     </head>
     <header class="header">
-        <container >
-            <div><img src="" alt=""></div>
+        <container>
+            <div><img src="" alt="" /></div>
             <div><p>About me</p></div>
         </container>
     </header>
@@ -16,35 +16,43 @@
         <container class="searchContent">
             <h2>Pesquisar</h2>
             <form action="" method="get">
-                <input type="number" name="" id="CharacterId"></input>
+                <input type="number" name="" id="CharacterId" />
                 <button id="GoButton">Procurar</button>
                 <button id="CleanButton">Limpar</button>
-                </form>
-                <pre id="Content"></pre> 
-                <img src="" alt="" id="Image"></img>
-                <hr></hr>
+            </form>
+            <hr />
         </container>
 
+        <section class="container mx-auto mb-7">
+            <div>
+                <div
+                    id="Content"
+                    class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 mx-auto gap-6 max-w-7xl"
+                >
+                    <!--   <div id="Card"></div>
+                    <img src="" alt="" id="CharacterImage" /> -->
+                </div>
+            </div>
+        </section>
         <container>
             <div>
-            <h2>Filtrar informações</h2>
+                <h2>Filtrar informações</h2>
                 <form>
-                    <input type="checkbox" id="name" name="name" value="Bike">
-                    <label> Name </label><br>
-                    <input type="checkbox" id="status" name="status" value="Car">
-                    <label> Status </label><br>
-                    <input type="checkbox" id="species" name="species" value="Boat">
-                    <label> Specie</label><br>
-                    <input type="checkbox" id="gender" name="gender" value="Bike">
-                    <label> Gender </label><br>
-                    <input type="checkbox" id="origin" name="origin" value="Car">
-                    <label> Planet of the Origin </label><br>
-                    <input type="checkbox" id="episode" name="episode" value="Boat">
-                    <label> Episode</label><br>
-                    </form>
-                </div>
+                    <input type="checkbox" id="name" name="name" />
+                    <label> Name </label><br />
+                    <input type="checkbox" id="status" name="status" <label />
+                    Status <br />
+                    <input type="checkbox" id="species" name="species" />
+                    <label> Specie</label><br />
+                    <input type="checkbox" id="gender" name="gender" />
+                    <label> Gender </label><br />
+                    <input type="checkbox" id="origin" name="origin" <label />
+                    Planet of the Origin <br />
+                    <input type="checkbox" id="episode" name="episode" />
+                    <label> Episode</label><br />
+                </form>
+            </div>
         </container>
-        
     </body>
     <footer>
         <script src="script.js"></script>
