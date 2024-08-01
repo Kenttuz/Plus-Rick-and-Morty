@@ -1,26 +1,117 @@
 const CharacterId = document.getElementById('CharacterId')
+const CharacterName = document.getElementById('CharacterName')
 const Content = document.getElementById('Content')
 const CharacterImage = document.getElementById('CharacterImage')
 const GoButton = document.getElementById('GoButton')
 const CleanButton = document.getElementById('CleanButton')
 
-const fetchAllCharacters = () => {
-    return fetch('https://rickandmortyapi.com/api/character')
+const fetchAllCharacters = (params = '') => {
+    return fetch(`https://rickandmortyapi.com/api/character${params}`)
         .then(response => response.json())
         .then(data => {
             return data.results
         })
 }
 
-const fetchApi = value => {
+const fetchCharacterById = value => {
     const result = fetch(`https://rickandmortyapi.com/api/character/${value}`)
         .then(response => response.json())
         .then(data => {
-            return data
+            return [data]
         })
     return result
 }
 
+const fetchCharactersByName = name => {
+    return fetch(`https://rickandmortyapi.com/api/character/?name=${name}`)
+        .then(response => response.json())
+        .then(data => {
+            return data.results
+        })
+}
+
+// Função para exibir os personagens com base nos campos selecionados
+const displayCharacters = (characters, filters) => {
+    Content.innerHTML = '' // Limpa o conteúdo antes de adicionar novos elementos
+    characters.forEach(character => {
+        const characterInfo = document.createElement('div')
+        characterInfo.className = 'character flex gap-2 max-md:mx-3 flex-col'
+
+        const characterImage = document.createElement('img')
+        characterImage.className = 'w-full max-h-[90%]'
+        characterImage.src = character.image
+        characterImage.alt = character.name
+        characterInfo.appendChild(characterImage)
+
+        if (filters.length === 0) {
+            for (const key in character) {
+                if (
+                    character.hasOwnProperty(key) &&
+                    key !== 'image' &&
+                    key !== 'type' &&
+                    key !== 'url' &&
+                    key !== 'created' &&
+                    typeof character[key] !== 'object'
+                ) {
+                    const infoParagraph = document.createElement('p')
+                    infoParagraph.innerHTML = `<strong>${key}:</strong> ${character[key]}`
+                    characterInfo.appendChild(infoParagraph)
+                } else if (
+                    character.hasOwnProperty(key) &&
+                    Array.isArray(character[key])
+                ) {
+                    const resultArray = character[key].join('\r\n')
+                    const infoParagraph = document.createElement('p')
+                    infoParagraph.innerHTML = `<strong>${key}:</strong> ${resultArray}`
+                    characterInfo.appendChild(infoParagraph)
+                } else if (character.hasOwnProperty(key) && key === 'origin') {
+                    const infoParagraph = document.createElement('p')
+                    infoParagraph.innerHTML = `<strong>${key}:</strong> ${character[key].name}`
+                    characterInfo.appendChild(infoParagraph)
+                }
+            }
+        } else {
+            filters.forEach(key => {
+                if (character.hasOwnProperty(key)) {
+                    const infoParagraph = document.createElement('p')
+                    if (key === 'origin') {
+                        infoParagraph.innerHTML = `<strong>${key}:</strong> ${character[key].name}`
+                    } else {
+                        infoParagraph.innerHTML = `<strong>${key}:</strong> ${character[key]}`
+                    }
+                    characterInfo.appendChild(infoParagraph)
+                }
+            })
+        }
+
+        Content.appendChild(characterInfo)
+    })
+}
+
+const getQueryParams = () => {
+    let params = []
+    if (CharacterName.value) params.push(`name=${CharacterName.value}`)
+    const checkboxes = document.querySelectorAll(
+        'input[type="checkbox"]:checked'
+    )
+    checkboxes.forEach(checkbox => {
+        const value = checkbox.getAttribute('value')
+        if (value) {
+            params.push(`${checkbox.name}=${value}`)
+        }
+    })
+
+    return params.length ? `?${params.join('&')}` : ''
+}
+
+const getSelectedFilters = () => {
+    const filters = ['name', 'status', 'gender', 'species', 'origin', 'episode']
+    return filters.filter(key => {
+        const checkbox = document.getElementById(key)
+        return checkbox && checkbox.checked
+    })
+}
+/*
 const displayAllCharacters = async () => {
     const resultAll = await fetchAllCharacters()
     Content.innerHTML = '' // Limpa o conteúdo antes de adicionar novos elementos
@@ -67,6 +158,7 @@ const displayAllCharacters = async () => {
         }
     })
 }
+*/
 
 const keys = ['name', 'status', 'gender', 'species', 'origin', 'episode'] //cria um array com as keys do input checkbox
 
@@ -75,7 +167,7 @@ const keys = ['name', 'status', 'gender', 'species', 'origin', 'episode'] //cria
  *
  * @param {Object} result - The result object containing the data to be filtered.
  * @return {Object} A new object containing the filtered data based on the checked checkboxes.
- */
+
 const resultCheck = result => {
     const characterDiv = document.createElement('div')
     characterDiv.className = 'character flex gap-2 max-md:mx-3 flex-col'
@@ -116,64 +208,42 @@ const resultCheck = result => {
             characterInfo.appendChild(newTextElem)
         }
     })
-}
+} */
 
 GoButton.addEventListener('click', async event => {
-    event.preventDefault() // previne o comportamento padrão do botão (recarregar a página)
+    event.preventDefault() // previne o comportamento padrão do botão (recarregar a página)
     Content.innerHTML = '' // Limpa o conteúdo antes de adicionar novos elementos
-    const checkIsChecked = keys.some(
-        key => document.getElementById(key).checked
-    )
-    if (CharacterId.value === '' && !checkIsChecked) {
-        alert('É necessário fazer um filtro antes de pesquisar!!')
-        displayAllCharacters()
+
+    const queryParams = getQueryParams()
+    const selectedFilters = getSelectedFilters()
+
+    if (CharacterId.value) {
+        const character = await fetchCharacterById(CharacterId.value)
+        displayCharacters(character, selectedFilters)
+    } else if (CharacterName.value) {
+        const characters = await fetchCharactersByName(CharacterName.value)
+        displayCharacters(characters, selectedFilters)
+    } else if (queryParams) {
+        const characters = await fetchAllCharacters(queryParams)
+        displayCharacters(characters, selectedFilters)
     } else {
-        if (CharacterId.value && checkIsChecked) {
-            const resultSearch = await fetchApi(CharacterId.value)
-            resultCheck(resultSearch)
-        } else if (CharacterId.value && !checkIsChecked) {
-            const resultSearch = await fetchApi(CharacterId.value)
-            Content.innerHTML = `
-            <p><strong>Name:</strong> ${resultSearch.name}</p>
-            <p><strong>Status:</strong> ${resultSearch.status}</p>
-            <p><strong>Specie:</strong> ${resultSearch.species}</p>
-            <p><strong>Gender:</strong> ${resultSearch.gender}</p>`
-
-            const characterDiv = document.createElement('div')
-            characterDiv.className = 'character flex gap-2 max-md:mx-3 flex-col'
-            const characterInfo = document.createElement('div')
-            const characterImage = document.createElement('img')
-            characterImage.className = '"w-full max-h-[90%]'
-
-            characterImage.src = resultSearch.image
-            characterImage.alt = resultSearch.name
-
-            characterDiv.appendChild(characterImage)
-            characterDiv.appendChild(characterInfo)
-
-            Content.appendChild(characterDiv)
-
-            Content.appendChild(characterDiv)
-        } else if (!CharacterId.value && checkIsChecked) {
-            const resultAll = await fetchAllCharacters()
-            resultAll.forEach(character => {
-                resultCheck(character)
-            })
-        } else {
-            displayAllCharacters()
-        }
+        const allCharacters = await fetchAllCharacters()
+        displayCharacters(allCharacters, selectedFilters)
     }
 })
 
-CleanButton.addEventListener('click', event => {
-    event.preventDefault() // previne o comportamento padrão do botão (recarregar a página)
+CleanButton.addEventListener('click', async event => {
+    event.preventDefault() // previne o comportamento padrão do botão (recarregar a página)
     CharacterId.value = ''
-    Content.textContent = ''
-    Image.src = ''
-    keys.map(key => document.getElementById(key)).forEach(
-        element => (element.checked = false)
-    )
-    displayAllCharacters()
+    CharacterName.value = ''
+    document
+        .querySelectorAll('input[type="checkbox"]')
+        .forEach(checkbox => (checkbox.checked = false))
+    Content.innerHTML = ''
+    const allCharacters = await fetchAllCharacters()
+    displayCharacters(allCharacters, getSelectedFilters())
 })
-
-window.addEventListener('load', displayAllCharacters)
+window.addEventListener('load', async () => {
+    const allCharacters = await fetchAllCharacters()
+    displayCharacters(allCharacters, getSelectedFilters())
+})
